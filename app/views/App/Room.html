@@ -1,0 +1,60 @@
+{{set . "title" "Chat room"}}
+{{template "header.html" .}}
+
+<h1>WebSocket — You are now chatting as 2154994241
+  <a href="/">Leave the chat room</a></h1>
+
+<div id="thread">
+  <script type="text/html" id="message_tmpl">
+      <div class="message <%= event.Num == '2154994241' ? 'you' : '' %>">
+        <h2><%= event.Num %></h2>
+        <p>
+          <%= event.Message %>
+        </p>
+      </div>
+  </script>
+</div>
+
+<div id="newMessage">
+  <input type="text" id="message" autocomplete="off" autofocus>
+  <input type="text" id="number" autocomplete="off" autofocus>
+  <input type="submit" value="send" id="send">
+</div>
+
+<script type="text/javascript">
+
+  // Create a socket
+  var socket = new WebSocket('ws://'+window.location.host+'/websocket/room/socket?num=2154994241')
+
+  // Display a message
+  var display = function(event) {
+    $('#thread').append(tmpl('message_tmpl', {event: event}));
+    $('#thread').scrollTo('max')
+  }
+
+$(".message").click(function(e) {
+        $("#number").val($(this).find("h2").html())
+});
+
+  // Message received on the socket
+socket.onmessage = function(event) {
+    console.log(event);
+    display(JSON.parse(event.data))
+  }
+
+$('#send').click(function(e) {
+    var tosend = {}
+    tosend.Message = $('#message').val()
+    tosend.Num = $('#number').val()
+    $('#message').val('')
+    socket.send(JSON.stringify(tosend))
+  });
+
+  $('#message').keypress(function(e) {
+    if(e.charCode == 13 || e.keyCode == 13) {
+      $('#send').click()
+      e.preventDefault()
+    }
+  })
+
+</script>

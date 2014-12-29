@@ -1,0 +1,11 @@
+{
+    "name": "smswebproxy",
+    "description": "This app, along with it's corresponding android app, lets you receive and send messages from your own personal web site, deployed to your own heroku account!",
+    "keywords": ["text", "messaging", "iMessage", "proxy", "text messaging", "sms"],
+    "repository": "https://github.com/prashanthsadasivan/smswebproxy",
+    "env": {
+        "BUILDPACK_URL": "https://github.com/robfig/heroku-buildpack-go-revel"
+    }
+}
+
+
