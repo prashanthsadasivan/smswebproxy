@@ -69,8 +69,12 @@ func (c App) Receive(receiver, num_from, messageReceived string) revel.Result {
     return c.RenderText("")
 }
 
-func (c App) Room() revel.Result {
-    return c.Render()
+func (c App) Room(num string) revel.Result {
+    return c.Render(num)
+}
+
+func (c App) Home() revel.Result {
+    return c.RenderText("woooooooooo")
 }
 
 func (c App) Websock(num string, ws *websocket.Conn) revel.Result {

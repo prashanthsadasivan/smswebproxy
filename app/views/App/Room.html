@@ -1,12 +1,12 @@
 {{set . "title" "Chat room"}}
 {{template "header.html" .}}
 
-<h1>WebSocket — You are now chatting as 2154994241
+<h1>WebSocket — You are now chatting as {{.num }}
   <a href="/">Leave the chat room</a></h1>
 
 <div id="thread">
   <script type="text/html" id="message_tmpl">
-      <div class="message <%= event.Num == '2154994241' ? 'you' : '' %>">
+      <div class="message <%= event.Num == {{.num}} ? 'you' : '' %>">
         <h2><%= event.Num %></h2>
         <p>
           <%= event.Message %>
@@ -24,7 +24,7 @@
 <script type="text/javascript">
 
   // Create a socket
-  var socket = new WebSocket('ws://'+window.location.host+'/websocket/room/socket?num=2154994241')
+    var socket = new WebSocket('ws://'+window.location.host+'/websocket/room/socket?num={{.num}}')
 
   // Display a message
   var display = function(event) {

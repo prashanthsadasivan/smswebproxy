@@ -9,6 +9,8 @@ GET     /favicon.ico                            404
 
 # Map static resources from the /app/public folder to the /public path
 GET     /public/*filepath                       Static.Serve("public")
+
+GET     /                                             App.Home
 POST    /gcmreg                                       App.Gcm
 POST    /send                                         App.Send
 POST    /receive                                      App.Receive
