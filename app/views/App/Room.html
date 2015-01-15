@@ -44,7 +44,7 @@ $(".message").click(function(e) {
   // Message received on the socket
 socket.onmessage = function(event) {
     console.log(event);
-    if (event.data != "pong") {
+    if (event.data != "\"pong\"") {
         display(JSON.parse(event.data));
     }
   }
