@@ -99,7 +99,7 @@ func (c App) Websock(num string, ws *websocket.Conn) revel.Result {
             if msg == "ping" {
                 if websocket.JSON.Send(ws, "pong") != nil {
                     // They disconnected.
-                    return nil
+                    return
                 }
             } else {
                 var sms room.SMSMessage
