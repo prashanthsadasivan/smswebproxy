@@ -122,10 +122,10 @@ func (c App) Websock(num string, ws *websocket.Conn) revel.Result {
                     // They disconnected.
                     return nil
                 }
+            } else {
+                // Otherwise, say something.
+                sendMessage(msg, conduit.RegId)
             }
-
-            // Otherwise, say something.
-            sendMessage(msg, conduit.RegId)
         }
     }
     return nil
