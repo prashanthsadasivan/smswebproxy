@@ -44,7 +44,9 @@ $(".message").click(function(e) {
   // Message received on the socket
 socket.onmessage = function(event) {
     console.log(event);
-    display(JSON.parse(event.data))
+    if (event != "pong") {
+        display(JSON.parse(event.data));
+    }
   }
 
 $('#send').click(function(e) {
@@ -60,6 +62,11 @@ $('#send').click(function(e) {
       $('#send').click()
       e.preventDefault()
     }
-  })
+    })
+
+setInterval(function() {
+    console.log("pinging");
+    socekt.send("ping"); 
+}, 10000);
 
 </script>
