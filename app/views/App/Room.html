@@ -24,7 +24,7 @@
 <script type="text/javascript">
 
   // Create a socket
-    var socket = new WebSocket('ws://'+window.location.host+'/websocket/room/socket?num={{.num}}')
+    var socket = new WebSocket('wss://'+window.location.host+'/websocket/room/socket?num={{.num}}')
 
   // Display a message
   var display = function(event) {
