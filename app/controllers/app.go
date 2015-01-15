@@ -2,7 +2,7 @@ package controllers
 
 import (
     "github.com/revel/revel"
-    "cloudText/app/room"
+    "smswebproxy/app/room"
     "fmt"
     "net/http"
     "encoding/json"
