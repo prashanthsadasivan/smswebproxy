@@ -23,8 +23,13 @@
 
 <script type="text/javascript">
 
-  // Create a socket
-    var socket = new WebSocket('wss://'+window.location.host+'/websocket/room/socket?num={{.num}}')
+    // Create a socket
+    var socket;
+    if (window.location.protocol != "https:") {
+        socket = new WebSocket('ws://'+window.location.host+'/websocket/room/socket?num={{.num}}')
+    } else {
+        socket = new WebSocket('wss://'+window.location.host+'/websocket/room/socket?num={{.num}}')
+    }
 
   // Display a message
   var display = function(event) {
