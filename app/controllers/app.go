@@ -96,9 +96,16 @@ func (c App) Websock(num string, ws *websocket.Conn) revel.Result {
                 return
             }
             fmt.Printf("got message from ws: %s\n", msg)
-            var sms room.SMSMessage
-            json.Unmarshal([]byte(msg), &sms)
-            messagesToSend <- sms
+            if msg == "ping" {
+                if websocket.JSON.Send(ws, "pong") != nil {
+                    // They disconnected.
+                    return nil
+                }
+            } else {
+                var sms room.SMSMessage
+                json.Unmarshal([]byte(msg), &sms)
+                messagesToSend <- sms
+            }
         }
     }()
 
@@ -117,15 +124,8 @@ func (c App) Websock(num string, ws *websocket.Conn) revel.Result {
             if !ok {
                 return nil
             }
-            if msg.Message == "ping" {
-                if websocket.JSON.Send(ws, "pong") != nil {
-                    // They disconnected.
-                    return nil
-                }
-            } else {
-                // Otherwise, say something.
-                sendMessage(msg, conduit.RegId)
-            }
+            // Otherwise, say something.
+            sendMessage(msg, conduit.RegId)
         }
     }
     return nil
