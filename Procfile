@@ -1,1 +1,0 @@
-web: revel run smswebproxy
