@@ -8,6 +8,7 @@ import (
     "encoding/json"
     "strings"
     "code.google.com/p/go.net/websocket"
+    "os"
 )
 
 type App struct {
@@ -46,7 +47,7 @@ func sendMessage(message room.SMSMessage, reg string) {
         panic(err)
     }
     request.Header.Add("Content-Type","application/json")
-    request.Header.Add("Authorization","key=AIzaSyBXM0IhHVTxedla2SR7h5v8aydliLNo6y4")
+    request.Header.Add("Authorization",os.Getenv("GCM_AUTH_KEY"))
     resp, err2 := client.Do(request)
     if err2 != nil {
         panic(err2)
