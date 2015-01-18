@@ -39,6 +39,7 @@ func sendMessage(message room.SMSMessage, reg string) {
     }
     datastring := string(payload[:])
     fmt.Printf("datastring: %s\n", datastring)
+    fmt.Printf("regid: %s\n", reg)
 
     request, err := http.NewRequest("POST", "https://android.googleapis.com/gcm/send", strings.NewReader("{\"registration_ids\":[\"" + reg + "\"], \"data\" : " + datastring + "}"))
     if err != nil {
