@@ -16,7 +16,7 @@ type App struct {
 }
 
 func (c App) Gcm(regid, num string) revel.Result {
-	fmt.Printf("regId: %s\n num:%s\n", regid, num)
+	fmt.Printf("regId: %s\n num:%s\n postnum: %s\n", regid, num, c.Request.PostFormValue("num"))
 	conduit := new(room.Conduit)
 	conduit.RegId = regid
 	conduit.Received = make(chan room.SMSMessage)

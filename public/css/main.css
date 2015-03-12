@@ -128,7 +128,7 @@ h1 a {
     padding-left: 115px;
 }
 
-#newMessage {
+#message_compose {
     position: fixed;
     left: 14px;
     right: 14px;
@@ -136,7 +136,7 @@ h1 a {
     height: 60px;
 }
 
-#newMessage #message {
+#message_compose .message {
     width: 70%;
     padding: 5px;
 }

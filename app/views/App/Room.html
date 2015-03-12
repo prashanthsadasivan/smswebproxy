@@ -2,7 +2,43 @@
 {{template "header.html" .}}
 
 <h1>WebSocket — You are now chatting as {{.num }}
-  <a href="/">Leave the chat room</a></h1>
+    <a href="/">Leave the chat room</a></h1>
+
+<script type="text/jsx">
+    var MessageForm = React.createClass({
+        getInitialState: function() {
+            return {Message: '', Num: ''};
+        },
+        handleMessageChange: function(event) {
+            this.setState({Message: event.target.value});
+        },
+        handleKeyUp: function(event) {
+            if (event.which === 13 && this.state.Message != "" && this.state.Message != null && this.state.Message != undefined) {
+                this.handleSendClick();
+            }
+        },
+        handleNumChange: function(event) {
+            this.setState({Num: event.target.value});
+        },
+        handleSendClick: function(event) {
+            console.log(this.state);
+            socket.send(JSON.stringify(this.state))
+            this.setState({Message: ''});
+        },
+        render: function() {
+            return <div>
+                <p><input type="text" className="num" value={this.state.Num} onChange={this.handleNumChange} /></p>
+                <p><input type="text" onKeyUp={this.handleKeyUp} className="message" value={this.state.Message} onChange={this.handleMessageChange} /> </p>
+                <input type="submit" value="send" id="send" onClick={this.handleSendClick}/>
+            </div>;
+        }
+    });
+
+    React.render(
+        <MessageForm />, 
+        document.getElementById("message_compose")
+    );
+</script>
 
 <div id="thread">
   <script type="text/html" id="message_tmpl">
@@ -15,10 +51,7 @@
   </script>
 </div>
 
-<div id="newMessage">
-  <input type="text" id="message" autocomplete="off" autofocus>
-  <input type="text" id="number" autocomplete="off" autofocus>
-  <input type="submit" value="send" id="send">
+<div id="message_compose">
 </div>
 
 <script type="text/javascript">
