@@ -56,6 +56,21 @@
 
 <script type="text/javascript">
 
+    function notifyMe(notifBody, sender) {
+        if (!Notification) {
+            alert('Please us a modern version of Chrome, Firefox, Opera or Firefox.');
+            return;
+        }
+
+        if (Notification.permission !== "granted")
+            Notification.requestPermission();
+
+        var notification = new Notification(sender, {
+            icon: 'https://d30y9cdsu7xlg0.cloudfront.net/icon_uploads/477f3e13-015b-43f8-92d8-88c28a4e9f77.svg?Expires=1426134546&Signature=ZZnjW4D7WiyDYAQsWoogGeoLgJnXYdQgK-aA142iPuUqDIsyW3YvJMBt~D-L0bnUr6fOwNcYZPWhFgmx~NMoGC7Rz7Cd4NbUlh2wW5Wz0vCNGDLapOv1Diast7SqtxlkkuiNwyX19iop~ikp3lu8nCp6kqRFZKc6-jS3pa2MHXM_&Key-Pair-Id=APKAI5ZVHAXN65CHVU2Q',
+            body: notifBody,
+        });
+    }
+
     // Create a socket
     var socket;
     if (window.location.protocol != "https:") {
@@ -68,6 +83,8 @@
   var display = function(event) {
     $('#thread').append(tmpl('message_tmpl', {event: event}));
     $('#thread').scrollTo('max')
+    notifyMe(event.Message, event.Num);
+
   }
 
 $(".message").click(function(e) {
