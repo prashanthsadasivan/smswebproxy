@@ -7,22 +7,45 @@ import (
 	"github.com/revel/revel"
 	"net/http"
 	"os"
+	"smswebproxy/app/models"
 	"smswebproxy/app/room"
 	"strings"
 )
 
 type App struct {
-	*revel.Controller
+	GorpController
 }
 
-func (c App) Gcm(regid, num string) revel.Result {
-	fmt.Printf("regId: %s\n num:%s\n postnum: %s\n", regid, num, c.Request.PostFormValue("num"))
+func makeConduit(regid, num string) *room.Conduit {
 	conduit := new(room.Conduit)
 	conduit.RegId = regid
 	conduit.Received = make(chan room.SMSMessage)
 	room.AddConduit(num, conduit)
+	return conduit
+}
+
+func (c App) Gcm(regid, num string) revel.Result {
+	fmt.Printf("regId: %s\n num:%s\n postnum: %s\n", regid, num, c.Request.PostFormValue("num"))
+	makeConduit(regid, num)
+	results, err := c.Txn.Select(models.SoleUser{}, "select * from SoleUser")
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("results: %s\n", results)
+	if len(results) >= 1 {
+		numDeleted, err := c.Txn.Delete(results...)
+		if err != nil {
+			fmt.Printf("err: %s\n", err)
+		}
+		fmt.Printf("numDeleted: %d\n", numDeleted)
+	}
+	newSoleUser := &models.SoleUser{Number: num, GcmId: regid}
+	insertErr := c.Txn.Insert(newSoleUser)
+	if insertErr != nil {
+		fmt.Printf("here err: %s\n", insertErr)
+	}
 	c.Response.Status = 201
-	return nil
+	return c.RenderText("created")
 }
 
 func (c App) Send(sender, num_to, msgToTextOut string) revel.Result {
@@ -62,8 +85,12 @@ func (c App) Receive(receiver, num_from, messageReceived string) revel.Result {
 	fmt.Printf("received text message")
 	conduit := room.GetConduit(receiver)
 	if conduit == nil {
-		fmt.Printf("conduit was null when receiving message")
-		panic("dang")
+		soleUser := &models.SoleUser{}
+		err := c.Txn.SelectOne(soleUser, "select * from SoleUser")
+		if err != nil {
+			panic(err)
+		}
+		conduit = makeConduit(soleUser.GcmId, soleUser.Number)
 	}
 	sms := room.SMSMessage{Num: num_from, Message: messageReceived}
 	conduit.Received <- sms
@@ -86,8 +113,12 @@ func (c App) Websock(num string, ws *websocket.Conn) revel.Result {
 	fmt.Printf("ws num: %s\n", num)
 	conduit := room.GetConduit(num)
 	if conduit == nil {
-		fmt.Printf("ws conduit was null")
-		panic("woah")
+		soleUser := &models.SoleUser{}
+		err := c.Txn.SelectOne(soleUser, "select * from SoleUser")
+		if err != nil {
+			panic(err)
+		}
+		conduit = makeConduit(soleUser.GcmId, soleUser.Number)
 	}
 	messagesToSend := make(chan room.SMSMessage)
 	go func() {
