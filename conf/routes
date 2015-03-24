@@ -15,6 +15,7 @@ POST    /gcmreg                                       App.Gcm
 POST    /send                                         App.Send
 POST    /receive                                      App.Receive
 GET     /Room                                         App.Room
+GET     /QR                                           App.QR
 
 WS      /websocket/room/socket                        App.Websock
 

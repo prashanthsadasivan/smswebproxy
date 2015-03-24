@@ -1,7 +1,9 @@
 package controllers
 
 import (
+	"bytes"
 	"code.google.com/p/go.net/websocket"
+	"code.google.com/p/rsc/qr"
 	"encoding/json"
 	"fmt"
 	"github.com/revel/revel"
@@ -10,6 +12,7 @@ import (
 	"smswebproxy/app/models"
 	"smswebproxy/app/room"
 	"strings"
+	"time"
 )
 
 type App struct {
@@ -81,6 +84,21 @@ func sendMessage(message room.SMSMessage, reg string) {
 	}
 }
 
+func (c App) QR(hostname string) revel.Result {
+	code, err := qr.Encode(hostname, qr.H)
+	if err != nil {
+		panic(err)
+	}
+	png := code.PNG()
+	modtime := time.Now()
+	c.Response.Out.Header().Set("Content-Type", "image/png")
+	return &revel.BinaryResult{
+		Reader:  bytes.NewReader(png),
+		Name:    "qr.png",
+		ModTime: modtime,
+	}
+}
+
 func (c App) Receive(receiver, num_from, messageReceived string) revel.Result {
 	fmt.Printf("received text message")
 	conduit := room.GetConduit(receiver)
@@ -104,7 +122,7 @@ func (c App) Room(num string) revel.Result {
 }
 
 func (c App) Home() revel.Result {
-	return c.RenderText("woooooooooo")
+	return c.Render()
 }
 
 func (c App) Websock(num string, ws *websocket.Conn) revel.Result {
