@@ -5,7 +5,7 @@ import (
 	"github.com/go-gorp/gorp"
 	_ "github.com/lib/pq"
 	r "github.com/revel/revel"
-	"github.com/revel/revel/modules/db/app"
+	"github.com/revel/modules/db/app"
 	"smswebproxy/app/models"
 )
 

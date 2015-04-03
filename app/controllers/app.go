@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"bytes"
-	"code.google.com/p/go.net/websocket"
+	"golang.org/x/net/websocket"
 	"code.google.com/p/rsc/qr"
 	"encoding/json"
 	"fmt"
@@ -140,10 +140,12 @@ func (c App) Websock(num string, ws *websocket.Conn) revel.Result {
 	}
 	messagesToSend := make(chan room.SMSMessage)
 	go func() {
-		var msg string
+    var msg string
 		for {
+      fmt.Printf("%+v\n", ws)
 			err := websocket.Message.Receive(ws, &msg)
 			if err != nil {
+        fmt.Printf("err: %s\n", err.Error())
 				close(messagesToSend)
 				return
 			}
