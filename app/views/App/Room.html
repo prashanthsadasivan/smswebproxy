@@ -14,7 +14,8 @@
         },
         handleKeyUp: function(event) {
             if (event.which === 13 && this.state.Message != "" && this.state.Message != null && this.state.Message != undefined) {
-                this.handleSendClick();
+              this.handleSendClick();
+              window.onMessage(this.state.Message, this.state.Num, true);
             }
         },
         handleNumChange: function(event) {
@@ -32,30 +33,74 @@
                 <input type="submit" value="send" id="send" onClick={this.handleSendClick}/>
             </div>;
         }
-    });
+      });
+
+      var MessageRow = React.createClass({
+        render: function() {
+          return <div className={this.props.You ? "message you" : "message"}>
+            <h2>{this.props.Num}</h2>
+            <p>
+            {this.props.Message}
+            </p>
+          </div>
+        }
+      });
+
+      var Thread = React.createClass({
+        getInitialState: function() {
+          return { Messages: [] };
+        },
+        componentDidMount: function() {
+          window.register("thread", function(message, num, you) {
+            this.setState({ Messages: this.state.Messages.concat([{ Message: message, Num: num, You: you }])});
+          }.bind(this));
+        },
+        componentWillUnmount: function() {
+          window.unregister("thread");
+        },
+        render: function() {
+          return <div>
+            { this.state.Messages.map(function(message, i) {
+                return <MessageRow key={i} Message={message.Message} Num={message.Num} You={message.You} />
+              })}
+          </div>
+        }
+
+      })
 
     React.render(
-        <MessageForm />, 
+        <MessageForm />,
         document.getElementById("message_compose")
-    );
+        );
+
+    React.render(
+      <Thread />,
+      document.getElementById("thread")
+    )
+
 </script>
 
 <div id="thread">
-  <script type="text/html" id="message_tmpl">
-      <div class="message <%= event.Num == {{.num}} ? 'you' : '' %>">
-        <h2><%= event.Num %></h2>
-        <p>
-          <%= event.Message %>
-        </p>
-      </div>
-  </script>
 </div>
 
 <div id="message_compose">
 </div>
 
 <script type="text/javascript">
-
+  window.registeredCallbacks = {}
+  window.register = function(id, cb) {
+    window.registeredCallbacks[id] = cb;
+  }
+  window.unregister = function(id) {
+    delete window.registeredCallbacks[id];
+  }
+  window.onMessage = function(message, num, you) {
+    for(var index in window.registeredCallbacks) {
+      if (window.registeredCallbacks.hasOwnProperty(index)) {
+        window.registeredCallbacks[index](message, num, you);
+      }
+    }
+  };
     function notifyMe(notifBody, sender) {
         if (!Notification) {
             alert('Please us a modern version of Chrome, Firefox, Opera or Firefox.');
@@ -80,15 +125,14 @@
     }
 
   // Display a message
-  var display = function(event) {
-    $('#thread').append(tmpl('message_tmpl', {event: event}));
+  window.display = function(event) {
     $('#thread').scrollTo('max')
+    window.onMessage(event.Message, event.Num, false);
     notifyMe(event.Message, event.Num);
-
   }
 
 $(".message").click(function(e) {
-        $("#number").val($(this).find("h2").html())
+  $("#number").val($(this).find("h2").html())
 });
 
   // Message received on the socket
@@ -116,7 +160,7 @@ $('#send').click(function(e) {
 
 setInterval(function() {
     console.log("pinging");
-    socket.send("ping"); 
+    socket.send("ping");
 }, 10000);
 
 </script>
