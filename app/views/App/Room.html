@@ -28,8 +28,8 @@
         },
         render: function() {
             return <div>
-                <p><input type="text" className="num" value={this.state.Num} onChange={this.handleNumChange} /></p>
-                <p><input type="text" onKeyUp={this.handleKeyUp} className="message" value={this.state.Message} onChange={this.handleMessageChange} /> </p>
+                <p><input type="text" placeholder="number" className="num" value={this.state.Num} onChange={this.handleNumChange} /></p>
+                <p><input type="text" placeholder="message" onKeyUp={this.handleKeyUp} className="message" value={this.state.Message} onChange={this.handleMessageChange} /> </p>
                 <input type="submit" value="send" id="send" onClick={this.handleSendClick}/>
             </div>;
         }
