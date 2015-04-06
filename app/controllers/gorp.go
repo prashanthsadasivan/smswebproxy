@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	"github.com/go-gorp/gorp"
 	_ "github.com/lib/pq"
-	r "github.com/revel/revel"
 	"github.com/revel/modules/db/app"
+	r "github.com/revel/revel"
 	"smswebproxy/app/models"
 )
 
@@ -29,7 +29,7 @@ func InitDB() {
 		"GcmId":  2000,
 	})
 
-	t = Dbm.AddTable(models.Message{}).SetKeys(true, "MessageId")
+	t = Dbm.AddTable(models.SMSMessage{}).SetKeys(true, "MessageId")
 	setColumnSizes(t, map[string]int{
 		"Num":     15,
 		"Message": 2000,

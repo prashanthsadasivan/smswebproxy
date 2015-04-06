@@ -11,11 +11,13 @@ GET     /favicon.ico                            404
 GET     /public/*filepath                       Static.Serve("public")
 
 GET     /                                             App.Home
-POST    /gcmreg                                       App.Gcm
-POST    /send                                         App.Send
-POST    /receive                                      App.Receive
+POST    /Users                                        App.Create
 GET     /Room                                         App.Room
 GET     /QR                                           App.QR
+
+#forgive me REST gods, for I have sinned.
+POST    /Messages/Send                                App.Send
+POST    /Messages/Receive                             App.Receive
 
 WS      /websocket/room/socket                        App.Websock
 
