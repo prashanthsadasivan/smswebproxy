@@ -9,13 +9,21 @@
         getInitialState: function() {
             return {Message: '', Num: ''};
         },
+        componentDidMount: function() {
+          window.register("messageform", "receipient_selected", function(data) {
+            this.setState({Num: data.num});
+          }.bind(this));
+        },
+        componentWillUnmount: function() {
+          window.unregister("messageform", "receipient_selected");
+        },
         handleMessageChange: function(event) {
             this.setState({Message: event.target.value});
         },
         handleKeyUp: function(event) {
             if (event.which === 13 && this.state.Message != "" && this.state.Message != null && this.state.Message != undefined) {
               this.handleSendClick();
-              window.onMessage(this.state.Message, this.state.Num, true);
+              fireEvent("smsmessage", {message: this.state.Message, num: this.state.Num, you: true});
             }
         },
         handleNumChange: function(event) {
@@ -36,9 +44,12 @@
       });
 
       var MessageRow = React.createClass({
+        numClicked: function(event) {
+          fireEvent("receipient_selected", {num: this.props.Num})
+        },
         render: function() {
           return <div className={this.props.You ? "message you" : "message"}>
-            <h2>{this.props.Num}</h2>
+            <h2 onClick={this.numClicked}>{this.props.Num}</h2>
             <p>
             {this.props.Message}
             </p>
@@ -51,12 +62,12 @@
           return { Messages: [] };
         },
         componentDidMount: function() {
-          window.register("thread", function(message, num, you) {
-            this.setState({ Messages: this.state.Messages.concat([{ Message: message, Num: num, You: you }])});
+          window.register("thread", "smsmessage", function(data) {
+            this.setState({ Messages: this.state.Messages.concat([{ Message: data.message, Num: data.num, You: data.you }])});
           }.bind(this));
         },
         componentWillUnmount: function() {
-          window.unregister("thread");
+          window.unregister("thread", "smsmessage");
         },
         render: function() {
           return <div>
@@ -88,16 +99,22 @@
 
 <script type="text/javascript">
   window.registeredCallbacks = {}
-  window.register = function(id, cb) {
-    window.registeredCallbacks[id] = cb;
-  }
-  window.unregister = function(id) {
-    delete window.registeredCallbacks[id];
-  }
-  window.onMessage = function(message, num, you) {
-    for(var index in window.registeredCallbacks) {
-      if (window.registeredCallbacks.hasOwnProperty(index)) {
-        window.registeredCallbacks[index](message, num, you);
+  window.register = function(id, event_name, cb) {
+    if (window.registeredCallbacks[event_name] === undefined || window.registeredCallbacks[event_name] === null) {
+      window.registeredCallbacks[event_name] = {}
+    }
+    window.registeredCallbacks[event_name][id] = cb;
+    console.log("dawg", window.registeredCallbacks, event_name);
+  };
+  window.unregister = function(id, event_name) {
+    delete window.registeredCallbacks[event_name][id];
+  };
+  window.fireEvent = function(event_name, data) {
+    for(var index in window.registeredCallbacks[event_name]) {
+      console.log("yo",index,  window.registeredCallbacks, event_name);
+      if (window.registeredCallbacks[event_name].hasOwnProperty(index)) {
+        console.log("here");
+        window.registeredCallbacks[event_name][index](data, event_name);
       }
     }
   };
@@ -127,7 +144,7 @@
   // Display a message
   window.display = function(event) {
     $('#thread').scrollTo('max')
-    window.onMessage(event.Message, event.Num, false);
+    fireEvent("smsmessage", {message: event.Message, num: event.Num, you: false});
     notifyMe(event.Message, event.Num);
   }
 
