@@ -14,6 +14,7 @@ GET     /                                             App.Home
 POST    /Users                                        App.Create
 GET     /Room                                         App.Room
 GET     /QR                                           App.QR
+GET     /ping                                         App.Ping
 
 #forgive me REST gods, for I have sinned.
 POST    /Messages/Send                                App.Send
