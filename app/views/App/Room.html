@@ -1,9 +1,6 @@
 {{set . "title" "Chat room"}}
 {{template "header.html" .}}
 
-<h1>WebSocket — You are now chatting as {{.num }}
-    <a href="/">Leave the chat room</a></h1>
-
 <script type="text/jsx">
     var MessageForm = React.createClass({
         getInitialState: function() {
@@ -26,20 +23,13 @@
               fireEvent("smsmessage", {message: this.state.Message, num: this.state.Num, you: true});
             }
         },
-        handleNumChange: function(event) {
-            this.setState({Num: event.target.value});
-        },
         handleSendClick: function(event) {
             console.log(this.state);
             socket.send(JSON.stringify(this.state))
             this.setState({Message: ''});
         },
         render: function() {
-            return <div>
-                <p><input type="text" placeholder="number" className="num" value={this.state.Num} onChange={this.handleNumChange} /></p>
-                <p><input type="text" placeholder="message" onKeyUp={this.handleKeyUp} className="message" value={this.state.Message} onChange={this.handleMessageChange} /> </p>
-                <input type="submit" value="send" id="send" onClick={this.handleSendClick}/>
-            </div>;
+            return <input type="text" placeholder="message" onKeyUp={this.handleKeyUp} className="messageInput" value={this.state.Message} onChange={this.handleMessageChange} />;
         }
       });
 
@@ -49,7 +39,6 @@
         },
         render: function() {
           return <div className={this.props.You ? "message you" : "message"}>
-            <h2 onClick={this.numClicked}>{this.props.Num}</h2>
             <p>
             {this.props.Message}
             </p>
@@ -59,25 +48,69 @@
 
       var Thread = React.createClass({
         getInitialState: function() {
-          return { Messages: [] };
+          return { Messages: [], selectedNum: '' };
         },
         componentDidMount: function() {
           window.register("thread", "smsmessage", function(data) {
             this.setState({ Messages: this.state.Messages.concat([{ Message: data.message, Num: data.num, You: data.you }])});
           }.bind(this));
+          window.register("thread", "receipient_selected", function(data) {
+            this.setState({selectedNum: data.num});
+          }.bind(this));
         },
         componentWillUnmount: function() {
           window.unregister("thread", "smsmessage");
+          window.unregister("thread", "receipient_selected");
+        },
+        componentDidUpdate: function() {
+          $('.swpthread').scrollTo('max');
         },
         render: function() {
+          var self = this;
           return <div>
-            { this.state.Messages.map(function(message, i) {
+            { this.state.Messages.filter(function(message) { return message.Num == self.state.selectedNum }).map(function(message, i) {
                 return <MessageRow key={i} Message={message.Message} Num={message.Num} You={message.You} />
               })}
           </div>
         }
-
       })
+    var ContactList = React.createClass({
+      getInitialState: function() {
+        return { contacts: {}, selectedNum: ''}
+      },
+      componentDidMount: function() {
+        window.register("contactlist", "smsmessage", function(data) {
+          this.state.contacts[data.num] = true;
+          this.setState({contacts: this.state.contacts});
+          console.log("whatupdude", this.state);
+        }.bind(this));
+        window.register("contactlist", "receipient_selected", function(data) {
+          this.setState({selectedNum: data.num});
+        }.bind(this));
+      },
+      componentWillUnmount: function() {
+        window.unregister("contactlist", "smsmessage");
+        window.unregister("contactlist", "receipient_selected");
+      },
+      handleNumChange: function(event) {
+        fireEvent("receipient_selected", {num: event.target.value})
+      },
+      handleNumClick: function(event) {
+        fireEvent("receipient_selected", {num: event.target.getAttribute('value')});
+      },
+      render: function() {
+        var self = this;
+        return <div>
+          {
+            Object.keys(this.state.contacts).map(function(num, i) {
+              return <div key={i} onClick={self.handleNumClick} value={num} className={self.state.selectedNum == num ? "contact bold" : "contact"} >
+                <p value={num}>{num}</p>
+              </div>
+            })}
+          <input type="text" placeholder="number" className="num" value={this.state.Num} onChange={this.handleNumChange} />
+        </div>
+      }
+    });
 
     React.render(
         <MessageForm />,
@@ -89,13 +122,22 @@
       document.getElementById("thread")
     )
 
+    React.render(
+      <ContactList />,
+      document.getElementById("contact-list")
+      );
+
 </script>
 
-<div id="thread">
+<div class="swpcontainer">
+  <div class="contact-list" id="contact-list">
+  </div>
+  <div id="thread" class="swpthread">
+  </div>
+  <div id="message_compose" class="message-compose">
+  </div>
 </div>
 
-<div id="message_compose">
-</div>
 
 <script type="text/javascript">
   window.registeredCallbacks = {}
@@ -111,73 +153,71 @@
   };
   window.fireEvent = function(event_name, data) {
     for(var index in window.registeredCallbacks[event_name]) {
-      console.log("yo",index,  window.registeredCallbacks, event_name);
       if (window.registeredCallbacks[event_name].hasOwnProperty(index)) {
-        console.log("here");
         window.registeredCallbacks[event_name][index](data, event_name);
       }
     }
   };
-    function notifyMe(notifBody, sender) {
-        if (!Notification) {
-            alert('Please us a modern version of Chrome, Firefox, Opera or Firefox.');
-            return;
-        }
-
-        if (Notification.permission !== "granted")
-            Notification.requestPermission();
-
-        var notification = new Notification(sender, {
-            icon: window.location.host + '/public/img/squid.png',
-            body: notifBody,
-        });
+  function notifyMe(notifBody, sender) {
+    if (!Notification) {
+      alert('Please us a modern version of Chrome, Firefox, Opera or Firefox.');
+      return;
     }
 
-    // Create a socket
-    var socket;
-    if (window.location.protocol != "https:") {
-        socket = new WebSocket('ws://'+window.location.host+'/websocket/room/socket?num={{.num}}')
-    } else {
-        socket = new WebSocket('wss://'+window.location.host+'/websocket/room/socket?num={{.num}}')
-    }
+    if (Notification.permission !== "granted")
+      Notification.requestPermission();
+
+    var notification = new Notification(sender, {
+      icon: window.location.host + '/public/img/squid.png',
+      body: notifBody,
+    });
+  }
+
+  // Create a socket
+  var socket;
+  if (window.location.protocol != "https:") {
+    socket = new WebSocket('ws://'+window.location.host+'/websocket/room/socket?num={{.num}}')
+  } else {
+    socket = new WebSocket('wss://'+window.location.host+'/websocket/room/socket?num={{.num}}')
+  }
 
   // Display a message
   window.display = function(event) {
-    $('#thread').scrollTo('max')
     fireEvent("smsmessage", {message: event.Message, num: event.Num, you: false});
     notifyMe(event.Message, event.Num);
   }
 
-$(".message").click(function(e) {
-  $("#number").val($(this).find("h2").html())
-});
+  $(".message").click(function(e) {
+    $("#number").val($(this).find("h2").html())
+  });
 
   // Message received on the socket
-socket.onmessage = function(event) {
+  socket.onmessage = function(event) {
     console.log(event);
     if (event.data != "\"pong\"") {
-        display(JSON.parse(event.data));
+      display(JSON.parse(event.data));
     }
   }
 
-$('#send').click(function(e) {
+  $('#send').click(function(e) {
     var tosend = {}
     tosend.Message = $('#message').val()
-    tosend.Num = $('#number').val()
-    $('#message').val('')
-    socket.send(JSON.stringify(tosend))
+      tosend.Num = $('#number').val()
+      $('#message').val('')
+      socket.send(JSON.stringify(tosend))
   });
 
   $('#message').keypress(function(e) {
     if(e.charCode == 13 || e.keyCode == 13) {
       $('#send').click()
-      e.preventDefault()
+        e.preventDefault()
     }
-    })
+  })
 
-setInterval(function() {
+  setInterval(function() {
     console.log("pinging");
+    $.ajax({method: "GET", url: "/ping"}).then(function() {console.log("here", arguments);});
     socket.send("ping");
-}, 10000);
+  }, 10000);
 
 </script>
