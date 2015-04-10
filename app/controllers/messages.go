@@ -4,11 +4,12 @@ import (
 	"fmt"
 	"github.com/revel/revel"
 	"smswebproxy/app/models"
+	"strings"
 )
 
 func (c App) Receive(receiver, num_from, messageReceived string) revel.Result {
 	fmt.Printf("received text message")
-	sms := models.SMSMessage{Num: num_from, Message: messageReceived}
+	sms := models.SMSMessage{Num: strings.TrimPrefix(num_from, "+1"), Message: messageReceived}
 	appconnection := c.GorcAppConnection(receiver)
 	go func() {
 		appconnection.Received <- sms
