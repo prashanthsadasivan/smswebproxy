@@ -2,130 +2,130 @@
 {{template "header.html" .}}
 
 <script type="text/jsx">
-    var MessageForm = React.createClass({
-        getInitialState: function() {
-            return {Message: '', Num: ''};
-        },
-        componentDidMount: function() {
-          window.register("messageform", "receipient_selected", function(data) {
-            this.setState({Num: data.num});
-          }.bind(this));
-        },
-        componentWillUnmount: function() {
-          window.unregister("messageform", "receipient_selected");
-        },
-        handleMessageChange: function(event) {
-            this.setState({Message: event.target.value});
-        },
-        handleKeyUp: function(event) {
-            if (event.which === 13 && this.state.Message != "" && this.state.Message != null && this.state.Message != undefined) {
-              this.handleSendClick();
-              fireEvent("smsmessage", {message: this.state.Message, num: this.state.Num, you: true});
-            }
-        },
-        handleSendClick: function(event) {
-            console.log(this.state);
-            socket.send(JSON.stringify(this.state))
-            this.setState({Message: ''});
-        },
-        render: function() {
-            return <input type="text" placeholder="message" onKeyUp={this.handleKeyUp} className="messageInput" value={this.state.Message} onChange={this.handleMessageChange} />;
-        }
-      });
-
-      var MessageRow = React.createClass({
-        numClicked: function(event) {
-          fireEvent("receipient_selected", {num: this.props.Num})
-        },
-        render: function() {
-          return <div className={this.props.You ? "message you" : "message"}>
-            <p>
-            {this.props.Message}
-            </p>
-          </div>
-        }
-      });
-
-      var Thread = React.createClass({
-        getInitialState: function() {
-          return { Messages: [], selectedNum: '' };
-        },
-        componentDidMount: function() {
-          window.register("thread", "smsmessage", function(data) {
-            this.setState({ Messages: this.state.Messages.concat([{ Message: data.message, Num: data.num, You: data.you }])});
-          }.bind(this));
-          window.register("thread", "receipient_selected", function(data) {
-            this.setState({selectedNum: data.num});
-          }.bind(this));
-        },
-        componentWillUnmount: function() {
-          window.unregister("thread", "smsmessage");
-          window.unregister("thread", "receipient_selected");
-        },
-        componentDidUpdate: function() {
-          $('.swpthread').scrollTo('max');
-        },
-        render: function() {
-          var self = this;
-          return <div>
-            { this.state.Messages.filter(function(message) { return message.Num == self.state.selectedNum }).map(function(message, i) {
-                return <MessageRow key={i} Message={message.Message} Num={message.Num} You={message.You} />
-              })}
-          </div>
-        }
-      })
-    var ContactList = React.createClass({
-      getInitialState: function() {
-        return { contacts: {}, selectedNum: ''}
-      },
-      componentDidMount: function() {
-        window.register("contactlist", "smsmessage", function(data) {
-          this.state.contacts[data.num] = true;
-          this.setState({contacts: this.state.contacts});
-          console.log("whatupdude", this.state);
-        }.bind(this));
-        window.register("contactlist", "receipient_selected", function(data) {
-          this.setState({selectedNum: data.num});
-        }.bind(this));
-      },
-      componentWillUnmount: function() {
-        window.unregister("contactlist", "smsmessage");
-        window.unregister("contactlist", "receipient_selected");
-      },
-      handleNumChange: function(event) {
-        fireEvent("receipient_selected", {num: event.target.value})
-      },
-      handleNumClick: function(event) {
-        fireEvent("receipient_selected", {num: event.target.getAttribute('value')});
-      },
-      render: function() {
-        var self = this;
-        return <div>
-          {
-            Object.keys(this.state.contacts).map(function(num, i) {
-              return <div key={i} onClick={self.handleNumClick} value={num} className={self.state.selectedNum == num ? "contact bold" : "contact"} >
-                <p value={num}>{num}</p>
-              </div>
-            })}
-          <input type="text" placeholder="number" className="num" value={self.state.selectedNum} onChange={this.handleNumChange} />
-        </div>
+  var MessageForm = React.createClass({
+    getInitialState: function() {
+      return {MessageType: 'SMS/Send', Message: '', Num: ''};
+    },
+    componentDidMount: function() {
+      window.register("messageform", "receipient_selected", function(data) {
+        this.setState({Num: data.num});
+      }.bind(this));
+    },
+    componentWillUnmount: function() {
+      window.unregister("messageform", "receipient_selected");
+    },
+    handleMessageChange: function(event) {
+      this.setState({Message: event.target.value});
+    },
+    handleKeyUp: function(event) {
+      if (event.which === 13 && this.state.Message != "" && this.state.Message != null && this.state.Message != undefined) {
+        this.handleSendClick();
+        fireEvent("smsmessage", {message: this.state.Message, num: this.state.Num, you: true});
       }
-    });
+    },
+    handleSendClick: function(event) {
+      console.log(this.state);
+      socket.send(JSON.stringify(this.state))
+      this.setState({Message: ''});
+    },
+    render: function() {
+      return <input type="text" placeholder="message" onKeyUp={this.handleKeyUp} className="messageInput" value={this.state.Message} onChange={this.handleMessageChange} />;
+    }
+  });
 
-    React.render(
-        <MessageForm />,
-        document.getElementById("message_compose")
-        );
+  var MessageRow = React.createClass({
+    numClicked: function(event) {
+      fireEvent("receipient_selected", {num: this.props.Num})
+    },
+    render: function() {
+      return <div className={this.props.You ? "message you" : "message"}>
+        <p>
+        {this.props.Message}
+        </p>
+      </div>
+    }
+  });
 
-    React.render(
-      <Thread />,
-      document.getElementById("thread")
-    )
+  var Thread = React.createClass({
+    getInitialState: function() {
+      return { Messages: [], selectedNum: '' };
+    },
+    componentDidMount: function() {
+      window.register("thread", "smsmessage", function(data) {
+        this.setState({ Messages: this.state.Messages.concat([{ Message: data.message, Num: data.num, You: data.you }])});
+      }.bind(this));
+      window.register("thread", "receipient_selected", function(data) {
+        this.setState({selectedNum: data.num});
+      }.bind(this));
+    },
+    componentWillUnmount: function() {
+      window.unregister("thread", "smsmessage");
+      window.unregister("thread", "receipient_selected");
+    },
+    componentDidUpdate: function() {
+      $('.swpthread').scrollTo('max');
+    },
+    render: function() {
+      var self = this;
+      return <div>
+        { this.state.Messages.filter(function(message) { return message.Num == self.state.selectedNum }).map(function(message, i) {
+            return <MessageRow key={i} Message={message.Message} Num={message.Num} You={message.You} />
+          })}
+      </div>
+    }
+  });
+  var ContactList = React.createClass({
+    getInitialState: function() {
+      return { contacts: {}, selectedNum: ''}
+    },
+    componentDidMount: function() {
+      window.register("contactlist", "smsmessage", function(data) {
+        this.state.contacts[data.num] = true;
+        this.setState({contacts: this.state.contacts});
+        console.log("whatupdude", this.state);
+      }.bind(this));
+      window.register("contactlist", "receipient_selected", function(data) {
+        this.setState({selectedNum: data.num});
+      }.bind(this));
+    },
+    componentWillUnmount: function() {
+      window.unregister("contactlist", "smsmessage");
+      window.unregister("contactlist", "receipient_selected");
+    },
+    handleNumChange: function(event) {
+      fireEvent("receipient_selected", {num: event.target.value})
+    },
+    handleNumClick: function(event) {
+      fireEvent("receipient_selected", {num: event.target.getAttribute('value')});
+    },
+    render: function() {
+      var self = this;
+      return <div>
+        {
+          Object.keys(this.state.contacts).map(function(num, i) {
+            return <div key={i} onClick={self.handleNumClick} value={num} className={self.state.selectedNum == num ? "contact bold" : "contact"} >
+              <p value={num}>{num}</p>
+            </div>
+          })}
+        <input type="text" placeholder="number" className="num" value={self.state.selectedNum} onChange={this.handleNumChange} />
+      </div>
+    }
+  });
 
-    React.render(
-      <ContactList />,
-      document.getElementById("contact-list")
+  React.render(
+      <MessageForm />,
+      document.getElementById("message_compose")
       );
+
+  React.render(
+    <Thread />,
+    document.getElementById("thread")
+  )
+
+  React.render(
+    <ContactList />,
+    document.getElementById("contact-list")
+    );
 
 </script>
 
@@ -199,14 +199,6 @@
     }
   }
 
-  $('#send').click(function(e) {
-    var tosend = {}
-    tosend.Message = $('#message').val()
-      tosend.Num = $('#number').val()
-      $('#message').val('')
-      socket.send(JSON.stringify(tosend))
-  });
-
   $('#message').keypress(function(e) {
     if(e.charCode == 13 || e.keyCode == 13) {
       $('#send').click()
@@ -215,9 +207,12 @@
   })
 
   setInterval(function() {
-    console.log("pinging");
     $.ajax({method: "GET", url: "/ping"}).then(function() {console.log("here", arguments);});
-    socket.send("ping");
+    var ping = {
+      MessageType: "ping"
+    };
+
+    socket.send(JSON.stringify(ping));
   }, 10000);
 
 </script>

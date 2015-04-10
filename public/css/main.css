@@ -74,9 +74,10 @@ h1 a {
 
 .swpcontainer {
   position: relative;
-  max-width: 960px;
-  width: 1960px;
-  height: 768px;
+  width: 90%;
+  max-width: 1440px;
+  height: 700px;
+  max-height: 100%;
   margin: 20px auto;
   box-sizing: border-box;
 }

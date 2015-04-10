@@ -1,6 +1,8 @@
 package appconnections
 
 import (
+	"fmt"
+	"golang.org/x/net/websocket"
 	"smswebproxy/app/models"
 )
 
@@ -31,4 +33,22 @@ func New(regid, num string) *AppConnection {
 	conduit.Received = make(chan models.SMSMessage)
 	conduits[num] = conduit
 	return conduit
+}
+
+func (c AppConnection) Start(ws *websocket.Conn) chan models.SMSMessage {
+	messagesToSend := make(chan models.SMSMessage)
+	go func() {
+		var sms models.SMSMessage
+		for {
+			err := websocket.JSON.Receive(ws, &sms)
+			if err != nil {
+				fmt.Printf("err: %s\n", err.Error())
+				close(messagesToSend)
+				return
+			}
+			fmt.Printf("got message from ws: %+v\n", sms)
+			messagesToSend <- sms
+		}
+	}()
+	return messagesToSend
 }
