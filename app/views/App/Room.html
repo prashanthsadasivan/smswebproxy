@@ -73,7 +73,26 @@
               })}
           </div>
         }
-      })
+    });
+    var Contact = React.createClass({
+      getInitialState: function() {
+        return {selected: false};
+      },
+      componentDidMount: function() {
+        window.register("contact_" + this.props.num, "receipient_selected", function(data) {
+          this.setState({selected: data.num == this.props.num});
+        }.bind(this));
+      },
+      componentWillUnmount: function() {
+        window.unregister("contact", "receipient_selected");
+      },
+      selectThread: function() {
+        fireEvent("receipient_selected", {num: this.props.num});
+      },
+      render: function() {
+        return <div className={this.state.selected ? "contact bold" : "contact"} onClick={this.selectThread}><p> {this.props.num} </p> </div>;
+      }
+    });
     var ContactList = React.createClass({
       getInitialState: function() {
         return { contacts: {}, selectedNum: ''}
@@ -95,20 +114,16 @@
       handleNumChange: function(event) {
         fireEvent("receipient_selected", {num: event.target.value})
       },
-      handleNumClick: function(event) {
-        fireEvent("receipient_selected", {num: event.target.getAttribute('value')});
-      },
       render: function() {
         var self = this;
         return <div>
           {
             Object.keys(this.state.contacts).map(function(num, i) {
-              return <div key={i} onClick={self.handleNumClick} value={num} className={self.state.selectedNum == num ? "contact bold" : "contact"} >
-                <p value={num}>{num}</p>
-              </div>
-            })}
+              return <Contact key={i} num={num} />;
+            })
+          }
           <input type="text" placeholder="number" className="num" value={self.state.selectedNum} onChange={this.handleNumChange} />
-        </div>
+        </div>;
       }
     });
 

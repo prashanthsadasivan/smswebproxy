@@ -86,7 +86,7 @@ h1 a {
   background-color: white;
   height: 100%;
   width: 250px;
-  border: 1px solid black;
+  border-right: 1px solid black;
   z-index: 99999;
 }
 .contact-list .contact {
@@ -105,9 +105,10 @@ h1 a {
   position: absolute;
   left: 250px;
   right: 0;
+  bottom: 36px;
+  top: 0px;
   background: white;
   overflow-y: scroll;
-  border: 1px solid green;
   padding: 0px 5px;
 }
 .message-compose {
@@ -115,7 +116,8 @@ h1 a {
   left: 250px;
   bottom: 0;
   right: 0;
-  padding: 0px 10px;
+  background: white;
+  padding: 0px 5px 0px 0px;
 }
 
 input {
@@ -128,7 +130,7 @@ input {
 .contact-list input {
   position: absolute;
   bottom: 0;
-  width: 97%;
+  width: 97.5%;
 }
 
 
